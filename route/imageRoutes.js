@@ -79,5 +79,30 @@ router.delete('/delete-image-by-id/:id', auth, async (req, res) => {
     }
 })
 
+router.get('/download-image/:id', auth, async (req, res) => {
+
+    try {
+
+        const image = await Image.findById(req.params.id);
+        if (!image) {
+            return res.status(404).send('Image not found');
+        }
+
+        if (image.user.toString() !== req.user.user_id) {
+            return res.status(403).send('Access denied. You don’t have permission to download this image.');
+        }
+
+        res.set('Content-Type', image.contentType);
+        res.set('Content-Disposition', 'attachment; filename=' + image.filename);
+
+        res.send(image.image);
+
+    }catch (error){
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+
+})
+
 
 module.exports = router;
