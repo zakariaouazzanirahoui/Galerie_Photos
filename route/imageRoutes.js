@@ -22,7 +22,7 @@ router.post('/upload', auth, upload.single('image'), async (req, res) => {
         });
 
         const savedImage = await newImg.save();
-        res.status(200).send("Image uploaded!");
+        res.status(200).json({ message: "Image uploaded successfully" });
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal server error");
@@ -50,8 +50,10 @@ router.get('/get-image-by-id/:id', auth, async (req, res) => {
             return res.status(403).send('Access denied. You don’t have permission to view this image.');
         }
 
-        res.set('Content-Type', image.contentType);
-        res.send(image.image);
+        // res.set('Content-Type', image.contentType);
+        res.status(200).json(image);
+
+        // res.send(image.image);
     } catch (error) {
         console.error(error);
         res.status(500).send('Internal Server Error');
@@ -95,7 +97,7 @@ router.get('/download-image/:id', auth, async (req, res) => {
         res.set('Content-Type', image.contentType);
         res.set('Content-Disposition', 'attachment; filename=' + image.filename);
 
-        res.send(image.image);
+        res.status(200).json(image);
 
     }catch (error){
         console.error(error);
