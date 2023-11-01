@@ -26,39 +26,36 @@ router.post('/process-image/:id', auth, upload.single('imageBuffer'), async (req
 
         const selectedOperation = req.body.operation; // 'resize', 'crop', etc.
 
-        const imageBase64 = image.toString('base64');
-
         // Prepare the data to send to the Flask server
         const formData = {
-            image: imageBase64,
+            image: image.image,
             new_width: req.body.new_width,
             new_height: req.body.new_height,
         };
 
-        console.log(formData)
+        // res.set('Content-Type', image.contentType);
+        // res.send(image.image);
 
         // Send an HTTP POST request to Flask for image processing
         const flaskResponse = await axios.post(`${flaskApiUrl}/process_image/${selectedOperation}`, formData, {
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data',
             },
         });
 
-        // Handle the response from Flask
         // Save the processed image as a new document in the database
         const processedImageData = flaskResponse.data;
-        console.log("processedImageData", processedImageData)
 
-        // Generate a unique filename for the processed image
+// Generate a unique filename for the processed image
         const uniqueFilename = generateUniqueFilename();
 
-        // Create a new Image instance for the processed image
+// Create a new Image instance for the processed image
         const processedImage = new Image({
             filename: uniqueFilename,
-            contentType: 'image/jpeg',
-            image: Buffer.from(processedImageData, 'base64'),
+            contentType: 'image/jpeg', // Adjust the content type as needed
+            image: Buffer.from(processedImageData), // Remove the 'base64' conversion
             user: req.user.user_id,
-            category: req.body.categoryId
+            category: req.body.categoryId,
         });
 
         // Save the processed image to the database
