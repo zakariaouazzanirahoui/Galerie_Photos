@@ -1,6 +1,9 @@
 const User = require("../model/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcryptjs');
+const Category = require("../model/category");
+const Image = require("../model/image");
+const auth = require("../middleware/auth");
 
 const express = require("express");
 const router = express.Router();
@@ -78,6 +81,28 @@ router.post("/login", async (req, res) => {
         console.log(err);
     }
 
+});
+
+router.get('/:user_id/category-count', auth, async (req, res) => {
+    try {
+        const userCategoriesCount = await Category.countDocuments({ user: req.params.user_id });
+
+        res.status(200).json({ categoryCount: userCategoriesCount });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal server error");
+    }
+});
+
+router.get('/:user_id/image-count', auth, async (req, res) => {
+    try {
+        const userImagesCount = await Image.countDocuments({ user: req.params.user_id });
+
+        res.status(200).json({ imageCount: userImagesCount });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal server error");
+    }
 });
 
 module.exports = router;

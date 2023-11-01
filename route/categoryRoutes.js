@@ -1,9 +1,10 @@
 const express = require("express");
 const Category = require("../model/category");
 const Image = require("../model/image");
+const auth = require("../middleware/auth");
 const router = express.Router();
 
-router.post("/add-category", async (req, res) => {
+router.post("/add-category", auth, async (req, res) => {
 
     try {
 
@@ -17,6 +18,7 @@ router.post("/add-category", async (req, res) => {
 
         const category = await Category.create({
             categoryName,
+            user: req.user.user_id,
         });
 
         res.status(201).json(category);
@@ -28,11 +30,22 @@ router.post("/add-category", async (req, res) => {
 })
 
 
-router.get('/get-category-by-id/:id/images', async (req, res) => {
+router.get('/get-category-by-id/:id/user/:user_id/images', auth, async (req, res) => {
     try {
-        const images = await Image.find({ category: req.params.id });
+        const images = await Image.find({ category: req.params.id, user: req.params.user_id });
 
         res.status(200).json(images);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal server error");
+    }
+});
+
+router.get('/get-category-by-user/:user_id', auth,async (req, res) => {
+    try {
+        const categories = await Category.find({ user: req.params.user_id });
+
+        res.status(200).json(categories);
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal server error");
