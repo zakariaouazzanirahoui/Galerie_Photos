@@ -20,7 +20,6 @@ app.use('/user', userRoutes);
 app.use('/image', imageRoutes);
 app.use('/category', categoryRoutes);
 app.use('/flask', flaskRoutes);
-//app.get('/flask', flaskRoutes.getFlaskData);
 
 
 module.exports = app;
