@@ -23,7 +23,8 @@ router.post('/upload', auth, upload.single('image'), async (req, res) => {
         });
 
         const savedImage = await newImg.save();
-        res.status(200).json({ message: "Image uploaded successfully" });
+        res.status(200).json(newImg);
+        //res.status(200).json({ message: "Image uploaded successfully" });
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal server error");

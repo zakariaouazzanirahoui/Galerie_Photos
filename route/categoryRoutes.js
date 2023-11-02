@@ -52,5 +52,28 @@ router.get('/get-category-by-user/:user_id', auth,async (req, res) => {
     }
 });
 
+router.delete('/delete-category-by-id/:id', auth, async (req, res) => {
+    try {
+
+        const category = await Category.findById(req.params.id);
+        if (!category) {
+            return res.status(404).send('Category not found');
+        }
+
+        if (category.user.toString() !== req.user.user_id) {
+            return res.status(403).send('Access denied. You don’t have permission to delete this category.');
+        }
+
+        await Image.deleteMany({ category: req.params.id });
+
+        await Category.findByIdAndRemove(req.params.id);
+        res.status(200).send('Category deleted successfully');
+
+    }catch (error){
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+})
+
 
 module.exports = router;

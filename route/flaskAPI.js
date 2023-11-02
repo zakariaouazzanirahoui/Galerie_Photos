@@ -11,11 +11,12 @@ const flaskApiUrl = 'http://127.0.0.1:5000';
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-router.post('/category/:category_id/user/:user_id/process-image/:id', upload.single('imageBuffer'), async (req, res) => {
+router.post('/category/:category_id/user/:user_id/process-image/:id', upload.single('image'), async (req, res) => {
 
     try{
 
         const { id } = req.params;
+        console.log(id);
         const image = await Image.findById(id);
 
         if (!image) {
@@ -49,10 +50,10 @@ router.post('/category/:category_id/user/:user_id/process-image/:id', upload.sin
         }else {
             const uniqueFilename = generateUniqueFilename();
 
-            const processedImage = new Image({
+            let processedImage = new Image({
                 filename: uniqueFilename,
-                contentType: processedImageData.contentType, // Adjust the content type as needed
-                image: bufferImage, // Remove the 'base64' conversion
+                contentType: processedImageData.contentType,
+                image: bufferImage,
                 user: req.params.user_id,
                 category: req.params.category_id,
             });
