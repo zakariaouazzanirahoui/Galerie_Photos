@@ -28,6 +28,10 @@ router.post('/category/:id/user/:user_id/process-image/:id', upload.single('imag
             image: image.image,
             new_width: req.body.new_width,
             new_height: req.body.new_height,
+            start_x: req.body.start_x,
+            start_y: req.body.start_y,
+            end_x: req.body.end_x,
+            end_y: req.body.end_y,
         };
 
         const flaskResponse = await axios.post(`${flaskApiUrl}/process_image/${selectedOperation}`, formData, {
@@ -38,22 +42,25 @@ router.post('/category/:id/user/:user_id/process-image/:id', upload.single('imag
 
         // Save the processed image as a new document in the database
         const processedImageData = flaskResponse.data.processed_image_data;
-        console.log(processedImageData)
-        console.log(typeof processedImageData);
+        const bufferImage = Buffer.from(processedImageData, 'base64');
 
-        const uniqueFilename = generateUniqueFilename();
+        if(selectedOperation != "resize" || selectedOperation != "crop"){
+            res.status(200).json(bufferImage);
+        }else {
+            const uniqueFilename = generateUniqueFilename();
 
-        const processedImage = new Image({
-            filename: uniqueFilename,
-            contentType: processedImageData.contentType, // Adjust the content type as needed
-            image: Buffer.from(processedImageData, 'base64'), // Remove the 'base64' conversion
-            user: req.params.user_id,
-            category: req.params.id,
-        });
+            const processedImage = new Image({
+                filename: uniqueFilename,
+                contentType: processedImageData.contentType, // Adjust the content type as needed
+                image: bufferImage, // Remove the 'base64' conversion
+                user: req.params.user_id,
+                category: req.params.id,
+            });
 
-        const savedProcessedImage = await processedImage.save();
+            const savedProcessedImage = await processedImage.save();
 
-        res.status(200).json(processedImage);
+            res.status(200).json(processedImage);
+        }
 
     }catch (error){
         console.error(error);
