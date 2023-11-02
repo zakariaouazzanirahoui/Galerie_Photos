@@ -11,7 +11,7 @@ const flaskApiUrl = 'http://127.0.0.1:5000';
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-router.post('/category/:id/user/:user_id/process-image/:id', upload.single('imageBuffer'), async (req, res) => {
+router.post('/category/:category_id/user/:user_id/process-image/:id', upload.single('imageBuffer'), async (req, res) => {
 
     try{
 
@@ -54,7 +54,7 @@ router.post('/category/:id/user/:user_id/process-image/:id', upload.single('imag
                 contentType: processedImageData.contentType, // Adjust the content type as needed
                 image: bufferImage, // Remove the 'base64' conversion
                 user: req.params.user_id,
-                category: req.params.id,
+                category: req.params.category_id,
             });
 
             const savedProcessedImage = await processedImage.save();
