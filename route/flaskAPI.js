@@ -11,12 +11,11 @@ const flaskApiUrl = 'http://127.0.0.1:5000';
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-router.post('/category/:category_id/user/:user_id/process-image/:id', upload.single('image'), async (req, res) => {
+router.post('/category/:category_id/user/:user_id/process-image/:id', auth, async (req, res) => {
 
     try{
 
         const { id } = req.params;
-        console.log(id);
         const image = await Image.findById(id);
 
         if (!image) {
@@ -45,7 +44,7 @@ router.post('/category/:category_id/user/:user_id/process-image/:id', upload.sin
         const processedImageData = flaskResponse.data.processed_image_data;
         const bufferImage = Buffer.from(processedImageData, 'base64');
 
-        if(selectedOperation != "resize" || selectedOperation != "crop"){
+        if(selectedOperation !== "resize" && selectedOperation !== "crop"){
             res.status(200).json(bufferImage);
         }else {
             const uniqueFilename = generateUniqueFilename();
@@ -60,7 +59,7 @@ router.post('/category/:category_id/user/:user_id/process-image/:id', upload.sin
 
             const savedProcessedImage = await processedImage.save();
 
-            res.status(200).json(processedImage);
+            res.status(200).json(savedProcessedImage);
         }
 
     }catch (error){
