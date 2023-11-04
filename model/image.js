@@ -13,7 +13,13 @@ const imageSchema = new mongoose.Schema({
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category'
-    }
+    },
+    histogram: {
+        type: Buffer,
+    },
+    palette: {
+        type: Buffer,
+    },
 });
 
 const Image = mongoose.model('Image', imageSchema);
