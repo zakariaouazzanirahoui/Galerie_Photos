@@ -5,6 +5,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const Image = require('../model/image');
 const crypto = require('crypto');
+const sharp = require("sharp");
 
 const flaskApiUrl = 'http://127.0.0.1:5000';
 
@@ -73,10 +74,14 @@ router.post('/process-image/:id', auth, async (req, res) => {
 
             const uniqueFilename = generateUniqueFilename();
 
+            const { width, height } = await sharp(bufferImage).metadata();
+
             let processedImage = new Image({
                 filename: uniqueFilename,
                 contentType: processedImageData.contentType,
                 image: bufferImage,
+                width: width,
+                height: height,
                 user: user_id,
                 category: category_id,
             });
