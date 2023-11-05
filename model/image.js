@@ -19,7 +19,9 @@ const imageSchema = new mongoose.Schema({
     },
     palette: {
         type: Buffer,
-    },
+    }
+    
+
 });
 
 const Image = mongoose.model('Image', imageSchema);

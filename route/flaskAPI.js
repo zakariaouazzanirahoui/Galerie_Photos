@@ -28,14 +28,10 @@ router.post('/process-image/:id', auth, async (req, res) => {
         const selectedOperation = req.body.operation;
 
         if (selectedOperation !== "resize" && selectedOperation !== "crop"){
-            if (image.get(selectedOperation)){
-                res.status(200).json(image[selectedOperation]);
-            }else {
+            
 
                 const processedImageData = await processAndSaveImage(image, req, selectedOperation);
-
                 if (selectedOperation === "color_moments"){
-
                     const color_moments = {
                         color_moments:
                             {
@@ -53,6 +49,7 @@ router.post('/process-image/:id', auth, async (req, res) => {
 
                     res.status(200).json(processedImageData);
                 }else{
+
                     const bufferImage = Buffer.from(processedImageData, 'base64');
 
                     const updatedImage = await Image.findByIdAndUpdate(
@@ -61,13 +58,13 @@ router.post('/process-image/:id', auth, async (req, res) => {
                         { new: true }
                     );
 
-                    console.log(updatedImage)
 
                     res.status(200).json(bufferImage);
                 }
-            }
+            
 
         } else{
+
 
             const processedImageData = await processAndSaveImage(image, req, selectedOperation);
             const bufferImage = Buffer.from(processedImageData, 'base64');
