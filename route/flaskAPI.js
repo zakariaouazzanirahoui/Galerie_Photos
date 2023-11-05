@@ -39,7 +39,7 @@ router.post('/process-image/:id', auth, async (req, res) => {
                     const color_moments = {
                         color_moments:
                             {
-                                type: [Number],
+                                Number,
                             },
 
                     };
@@ -78,7 +78,7 @@ router.post('/process-image/:id', auth, async (req, res) => {
 
             let processedImage = new Image({
                 filename: uniqueFilename,
-                contentType: processedImageData.contentType,
+                contentType: 'image/jpg',
                 image: bufferImage,
                 width: width,
                 height: height,
