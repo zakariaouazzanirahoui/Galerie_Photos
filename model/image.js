@@ -20,6 +20,10 @@ const imageSchema = new mongoose.Schema({
     palette: {
         type: Buffer,
     },
+    color_moments:
+        {
+            type: [Number],
+        },
 });
 
 const Image = mongoose.model('Image', imageSchema);
