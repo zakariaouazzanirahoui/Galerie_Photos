@@ -17,8 +17,8 @@ router.post('/process-image/:id', auth, async (req, res) => {
     try{
 
         const { id } = req.params;
-        const image = await Image.findById(id) .populate('user').populate('category'); 
-        const category_id =image.category._id.toString();
+        const image = await Image.findById(id) .populate('user').populate('category');
+        const category_id = image.category ? image.category._id.toString() : null;
         const user_id = image.user._id.toString();
 
         if (!image) {
@@ -28,22 +28,13 @@ router.post('/process-image/:id', auth, async (req, res) => {
         const selectedOperation = req.body.operation;
 
         if (selectedOperation !== "resize" && selectedOperation !== "crop"){
-            if (image.get(selectedOperation)){
+            if ((selectedOperation === 'color_moments' && image[selectedOperation].length !== 0) || (selectedOperation !== 'color_moments' && image.get(selectedOperation))){
                 res.status(200).json(image[selectedOperation]);
             }else {
 
                 const processedImageData = await processAndSaveImage(image, req, selectedOperation);
 
                 if (selectedOperation === "color_moments"){
-
-                    const color_moments = {
-                        color_moments:
-                            {
-                                Number,
-                            },
-
-                    };
-                    Image.schema.add(color_moments);
 
                     await Image.findByIdAndUpdate(
                         id,
@@ -60,8 +51,6 @@ router.post('/process-image/:id', auth, async (req, res) => {
                         { [selectedOperation]: bufferImage },
                         { new: true }
                     );
-
-                    console.log(updatedImage)
 
                     res.status(200).json(bufferImage);
                 }
