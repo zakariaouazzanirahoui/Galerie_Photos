@@ -7,7 +7,8 @@ const Image = require('../model/image');
 const crypto = require('crypto');
 const sharp = require("sharp");
 
-const flaskApiUrl = 'http://127.0.0.1:5000';
+//const flaskApiUrl = 'http://127.0.0.1:5000';
+const flaskApiUrl = 'http://74.234.201.105:5000';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
