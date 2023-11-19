@@ -7,8 +7,8 @@ const Image = require('../model/image');
 const crypto = require('crypto');
 const sharp = require("sharp");
 
-//const flaskApiUrl = 'http://127.0.0.1:5000';
-const flaskApiUrl = 'http://74.234.201.105:5000';
+const flaskApiUrl = 'http://127.0.0.1:5000';
+//const flaskApiUrl = 'http://74.234.201.105:5000';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -87,6 +87,55 @@ router.post('/process-image/:id', auth, async (req, res) => {
         res.status(500).send('Internal server error');
     }
 
+});
+
+async function processAndSaveImages(imageIds, selectedOperation, req) {
+    try {
+        const processedImageData = [];
+
+        for (const imageId of imageIds) {
+            const image = await Image.findById(imageId).populate('user').populate('category');
+            const category_id = image.category ? image.category._id.toString() : null;
+            const user_id = image.user._id.toString();
+
+            if (!image) {
+                return res.status(404).json({ message: 'Image not found' });
+            }
+
+            if (selectedOperation !== 'resize' && selectedOperation !== 'crop') {
+                if (
+                    (selectedOperation === 'color_moments' && image[selectedOperation].length !== 0) ||
+                    (selectedOperation !== 'color_moments' && image.get(selectedOperation))
+                ) {
+                    processedImageData.push(image[selectedOperation]);
+                } else {
+                    const processedImage = await processAndSaveImage(image, req, selectedOperation);
+                    processedImageData.push(processedImage);
+                }
+            } else {
+                const processedImage = await processAndSaveImage(image, req, selectedOperation);
+                processedImageData.push(processedImage);
+            }
+        }
+
+        return processedImageData;
+    } catch (error) {
+        console.error('Error processing and saving images:', error);
+        throw error;
+    }
+}
+
+router.post('/process-images', auth, upload.array('images'), async (req, res) => {
+    try {
+        const imageIds = req.body.imageIds;
+
+        const processedImageData = await processAndSaveImages(imageIds, req.body.operation, req);
+
+        res.status(200).json({ imageIds, processedImageData });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal server error');
+    }
 });
 
 // Function to generate a unique filename
