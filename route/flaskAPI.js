@@ -13,82 +13,6 @@ const flaskApiUrl = 'http://127.0.0.1:5000';
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-router.post('/process-image/:id', auth, async (req, res) => {
-
-    try{
-
-        const { id } = req.params;
-        const image = await Image.findById(id) .populate('user').populate('category');
-        const category_id = image.category ? image.category._id.toString() : null;
-        const user_id = image.user._id.toString();
-
-        if (!image) {
-            return res.status(404).json({ message: 'Image not found' });
-        }
-
-        const selectedOperation = req.body.operation;
-
-        if (selectedOperation !== "resize" && selectedOperation !== "crop"){
-            if ((selectedOperation === 'color_moments' && image[selectedOperation].length !== 0) || (selectedOperation !== 'color_moments' && image.get(selectedOperation))){
-                res.status(200).json(image[selectedOperation]);
-            }else {
-
-                const processedImageData = await processAndSaveImage(image, req, selectedOperation);
-
-                if (selectedOperation === "color_moments"){
-
-                    await Image.findByIdAndUpdate(
-                        id,
-                        { [selectedOperation]: processedImageData },
-                        { new: true }
-                    );
-
-                    res.status(200).json(processedImageData);
-                }else{
-                    const bufferImage = Buffer.from(processedImageData, 'base64');
-
-                    const updatedImage = await Image.findByIdAndUpdate(
-                        id,
-                        { [selectedOperation]: bufferImage },
-                        { new: true }
-                    );
-
-                    res.status(200).json(bufferImage);
-                }
-            }
-
-        } else{
-
-            const processedImageData = await processAndSaveImage(image, req, selectedOperation);
-            const bufferImage = Buffer.from(processedImageData, 'base64');
-
-            const uniqueFilename = generateUniqueFilename();
-
-            const { width, height } = await sharp(bufferImage).metadata();
-
-            let processedImage = new Image({
-                filename: uniqueFilename,
-                contentType: 'image/jpg',
-                image: bufferImage,
-                width: width,
-                height: height,
-                user: user_id,
-                category: category_id,
-            });
-
-            const savedProcessedImage = await processedImage.save();
-
-            res.status(200).json(savedProcessedImage);
-
-        }
-
-    }catch (error){
-        console.error(error);
-        res.status(500).send('Internal server error');
-    }
-
-});
-
 async function processAndSaveImages(imageIds, selectedOperation, req) {
     try {
         const processedImageData = [];
@@ -103,18 +27,72 @@ async function processAndSaveImages(imageIds, selectedOperation, req) {
             }
 
             if (selectedOperation !== 'resize' && selectedOperation !== 'crop') {
-                if (
-                    (selectedOperation === 'color_moments' && image[selectedOperation].length !== 0) ||
-                    (selectedOperation !== 'color_moments' && image.get(selectedOperation))
-                ) {
+                if (image[`is${selectedOperation.charAt(0).toUpperCase()}${selectedOperation.slice(1)}Processed`]){
                     processedImageData.push(image[selectedOperation]);
                 } else {
+
+                    switch (selectedOperation) {
+                        case 'histogram':
+                            image.isHistogramProcessed = true;
+                            break;
+                        case 'palette':
+                            image.isPaletteProcessed = true;
+                            break;
+                        case 'color_moments':
+                            image.isColorMomentsProcessed = true;
+                            break;
+                        case 'tamura':
+                            image.isTamuraProcessed = true;
+                            break;
+                        // TODO: add other cases
+                    }
+                    await image.save();
+
                     const processedImage = await processAndSaveImage(image, req, selectedOperation);
-                    processedImageData.push(processedImage);
+
+                    if (selectedOperation === "color_moments" || selectedOperation === "tamura"){
+
+                        await Image.findByIdAndUpdate(
+                            imageId,
+                            { [selectedOperation]: processedImage },
+                            { new: true }
+                        );
+
+                        processedImageData.push(processedImage);
+                    }else{
+                        const bufferImage = Buffer.from(processedImage, 'base64');
+
+                        const updatedImage = await Image.findByIdAndUpdate(
+                            imageId,
+                            { [selectedOperation]: bufferImage },
+                            { new: true }
+                        );
+
+                        processedImageData.push(bufferImage);
+                    }
                 }
             } else {
+
                 const processedImage = await processAndSaveImage(image, req, selectedOperation);
-                processedImageData.push(processedImage);
+
+                const bufferImage = Buffer.from(processedImage, 'base64');
+                const uniqueFilename = generateUniqueFilename();
+
+                const { width, height } = await sharp(bufferImage).metadata();
+
+                let processedImageDocument = new Image({
+                    filename: uniqueFilename,
+                    contentType: 'image/jpg',
+                    image: bufferImage,
+                    width: width,
+                    height: height,
+                    user: user_id,
+                    category: category_id,
+                });
+
+                const savedProcessedImage = await processedImageDocument.save();
+
+                processedImageData.push(savedProcessedImage);
             }
         }
 
