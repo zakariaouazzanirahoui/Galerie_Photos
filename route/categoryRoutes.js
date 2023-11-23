@@ -32,7 +32,8 @@ router.post("/add-category", auth, async (req, res) => {
 
 router.get('/get-category-by-id/:id/user/:user_id/images', auth, async (req, res) => {
     try {
-        const images = await Image.find({ category: req.params.id, user: req.params.user_id });
+        const images = await Image.find({ category: req.params.id, user: req.params.user_id })
+            .sort({ createdAt: -1 });
 
         res.status(200).json(images);
     } catch (error) {

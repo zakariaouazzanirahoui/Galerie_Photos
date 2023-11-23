@@ -9,30 +9,6 @@ const archiver = require('archiver');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-router.post('/upload', auth, upload.single('image'), async (req, res) => {
-    try {
-        const metadata = await sharp(req.file.buffer).metadata();
-
-        let newImg = new Image({
-            filename: req.file.originalname,
-            contentType: req.file.mimetype,
-            image: req.file.buffer,
-            width: metadata.width,
-            height: metadata.height,
-            user: req.user.user_id,
-            category: req.body.categoryId
-        });
-
-        const savedImage = await newImg.save();
-        res.status(200).json(newImg);
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Internal server error");
-    }
-});
-
-
 router.get('/get-image-by-id/:id', auth, async (req, res) => {
     try {
         const image = await Image.findById(req.params.id);
@@ -181,6 +157,25 @@ router.get('/download-images', auth, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('Internal Server Error');
+    }
+});
+
+// TODO
+router.post('/search-images', async (req, res) => {
+    try {
+        // Get the descriptor from the request
+        const queryDescriptor = req.body.queryDescriptor;
+
+        // Perform a search based on the query descriptor
+        const resultImages = await  Image.find({
+            // Example: Search based on histogram descriptor
+            'histogram': queryDescriptor.histogram,
+        });
+
+        res.status(200).json(resultImages);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal server error');
     }
 });
 
