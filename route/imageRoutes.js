@@ -6,6 +6,8 @@ const Image = require('../model/image');
 const router = express.Router();
 const archiver = require('archiver');
 
+const {processAndSaveImage} = require('./flaskAPI')
+
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -82,6 +84,8 @@ router.post('/upload-multiple', auth, upload.array('images'), async (req, res) =
         for (const file of req.files) {
             const metadata = await sharp(file.buffer).metadata();
 
+            const processedImage = await processAndSaveImage(file.buffer, req, "descriptor");
+
             const newImg = new Image({
                 filename: file.originalname,
                 contentType: file.mimetype,
@@ -89,7 +93,8 @@ router.post('/upload-multiple', auth, upload.array('images'), async (req, res) =
                 width: metadata.width,
                 height: metadata.height,
                 user: req.user.user_id,
-                category: req.body.categoryId
+                category: req.body.categoryId,
+                descriptor: processedImage
             });
 
             const savedImage = await newImg.save();

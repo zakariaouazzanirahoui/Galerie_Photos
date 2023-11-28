@@ -38,19 +38,13 @@ async function processAndSaveImages(imageIds, selectedOperation, req) {
                         case 'palette':
                             image.isPaletteProcessed = true;
                             break;
-                        case 'color_moments':
-                            image.isColorMomentsProcessed = true;
-                            break;
-                        case 'tamura':
-                            image.isTamuraProcessed = true;
-                            break;
                         // TODO: add other cases
                     }
                     await image.save();
 
-                    const processedImage = await processAndSaveImage(image, req, selectedOperation);
+                    const processedImage = await processAndSaveImage(image.image, req, selectedOperation);
 
-                    if (selectedOperation === "color_moments" || selectedOperation === "tamura"){
+                    if (selectedOperation === "color_moments"){
 
                         await Image.findByIdAndUpdate(
                             imageId,
@@ -73,7 +67,7 @@ async function processAndSaveImages(imageIds, selectedOperation, req) {
                 }
             } else {
 
-                const processedImage = await processAndSaveImage(image, req, selectedOperation);
+                const processedImage = await processAndSaveImage(image.image, req, selectedOperation);
 
                 const bufferImage = Buffer.from(processedImage, 'base64');
                 const uniqueFilename = generateUniqueFilename();
@@ -125,7 +119,7 @@ function generateUniqueFilename() {
 
 async function processAndSaveImage(image, req, selectedOperation) {
     const formData = {
-        image: image.image,
+        image: image,
         new_width: req.body.new_width,
         new_height: req.body.new_height,
         start_x: req.body.start_x,
@@ -151,4 +145,4 @@ async function processAndSaveImage(image, req, selectedOperation) {
 }
 
 
-module.exports = router;
+module.exports = {router, processAndSaveImage};

@@ -32,23 +32,17 @@ const imageSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    color_moments:
-        {
+    descriptor: {
+        image_moments: {
             type: [Number],
         },
-    isColorMomentsProcessed: {
-        type: Boolean,
-        default: false,
-    },
-    tamura:
-        {
-            type: Map,
-            of: String,
+        image_tamura: {
+            type: [Number],
         },
-    isTamuraProcessed: {
-        type: Boolean,
-        default: false,
-    }
+        image_gabor_filters: {
+            type: [Number],
+        },
+    },
 });
 
 const Image = mongoose.model('Image', imageSchema);
