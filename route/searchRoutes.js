@@ -10,11 +10,11 @@ const flaskApiUrl = 'http://127.0.0.1:5000';
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-router.get('/search-images', auth, upload.single('image'), async (req, res) => {
+router.get('/search-images', upload.single('image'), async (req, res) => {
     try {
         const queryImage = req.file.buffer;
 
-        const allImages = await getAllImagesFromDatabase();
+        const allImages = await getAllImagesFromDatabase(req);
 
         const similarImages = await searchImages(queryImage, allImages);
 
@@ -65,9 +65,10 @@ async function searchImages(queryImage, allImages) {
     }
 }
 
-async function getAllImagesFromDatabase() {
+async function getAllImagesFromDatabase(req) {
     try {
-        const allImages = await Image.find().lean();
+        // TODO : all operation
+        const allImages = await Image.find({ user: req.user.user_id }).lean();
 
         return allImages;
     } catch (error) {

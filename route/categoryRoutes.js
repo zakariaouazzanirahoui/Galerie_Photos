@@ -4,7 +4,7 @@ const Image = require("../model/image");
 const auth = require("../middleware/auth");
 const router = express.Router();
 
-router.post("/add-category", auth, async (req, res) => {
+router.post("/add-category", async (req, res) => {
 
     try {
 
@@ -30,7 +30,7 @@ router.post("/add-category", auth, async (req, res) => {
 })
 
 
-router.get('/get-category-by-id/:id/user/:user_id/images', auth, async (req, res) => {
+router.get('/get-category-by-id/:id/user/:user_id/images', async (req, res) => {
     try {
         const images = await Image.find({ category: req.params.id, user: req.params.user_id })
             .sort({ createdAt: -1 });
@@ -42,7 +42,7 @@ router.get('/get-category-by-id/:id/user/:user_id/images', auth, async (req, res
     }
 });
 
-router.get('/get-category-by-user/:user_id', auth,async (req, res) => {
+router.get('/get-category-by-user/:user_id', async (req, res) => {
     try {
         const categories = await Category.find({ user: req.params.user_id });
 
@@ -53,7 +53,7 @@ router.get('/get-category-by-user/:user_id', auth,async (req, res) => {
     }
 });
 
-router.delete('/delete-category-by-id/:id', auth, async (req, res) => {
+router.delete('/delete-category-by-id/:id', async (req, res) => {
     try {
 
         const category = await Category.findById(req.params.id);

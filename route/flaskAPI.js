@@ -97,7 +97,7 @@ async function processAndSaveImages(imageIds, selectedOperation, req) {
     }
 }
 
-router.post('/process-images', auth, upload.array('images'), async (req, res) => {
+router.post('/process-images', upload.array('images'), async (req, res) => {
     try {
         const imageIds = req.body.imageIds;
 

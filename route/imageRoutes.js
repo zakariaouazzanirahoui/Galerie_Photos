@@ -11,7 +11,7 @@ const {processAndSaveImage} = require('./flaskAPI')
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-router.get('/get-image-by-id/:id', auth, async (req, res) => {
+router.get('/get-image-by-id/:id', async (req, res) => {
     try {
         const image = await Image.findById(req.params.id);
         if (!image) {
@@ -31,7 +31,7 @@ router.get('/get-image-by-id/:id', auth, async (req, res) => {
     }
 });
 
-router.delete('/delete-image-by-id/:id', auth, async (req, res) => {
+router.delete('/delete-image-by-id/:id', async (req, res) => {
     try {
 
         const image = await Image.findById(req.params.id);
@@ -52,7 +52,7 @@ router.delete('/delete-image-by-id/:id', auth, async (req, res) => {
     }
 })
 
-router.get('/download-image/:id', auth, async (req, res) => {
+router.get('/download-image/:id', async (req, res) => {
 
     try {
 
@@ -77,7 +77,7 @@ router.get('/download-image/:id', auth, async (req, res) => {
 
 })
 
-router.post('/upload-multiple', auth, upload.array('images'), async (req, res) => {
+router.post('/upload-multiple', upload.array('images'), async (req, res) => {
     try {
         const images = [];
 
@@ -109,7 +109,7 @@ router.post('/upload-multiple', auth, upload.array('images'), async (req, res) =
     }
 });
 
-router.delete('/delete-images', auth, async (req, res) => {
+router.delete('/delete-images', async (req, res) => {
     try {
         const imageIds = req.body.imageIds;
 
@@ -128,7 +128,7 @@ router.delete('/delete-images', auth, async (req, res) => {
     }
 });
 
-router.get('/download-images', auth, async (req, res) => {
+router.get('/download-images', async (req, res) => {
     try {
         const imageIds = req.body.imageIds;
 
