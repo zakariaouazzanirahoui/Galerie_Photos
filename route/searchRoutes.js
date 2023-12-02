@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const Image = require('../model/image');
+const Weights = require('../model/weight');
 
 const flaskApiUrl = 'http://127.0.0.1:5000';
 
@@ -16,9 +17,13 @@ router.get('/search-images', upload.single('image'), async (req, res) => {
 
         const allImages = await getAllImagesFromDatabase(req);
 
-        const similarImages = await searchImages(queryImage, allImages);
+        const similarImagesResponse = await searchImages(queryImage, allImages, req);
+        console.log(similarImagesResponse)
+        const { similar_images, updated_weights } = similarImagesResponse;
 
-        const retrievedImages = await Image.find({ _id: { $in: similarImages } });
+        const retrievedImages = await Image.find({ _id: { $in: similar_images } });
+
+        Weights.findOneAndUpdate({}, { $set: { weights: updated_weights } }, { new: true })
 
         res.status(200).json({ retrievedImages });
     } catch (error) {
@@ -27,12 +32,19 @@ router.get('/search-images', upload.single('image'), async (req, res) => {
     }
 });
 
-async function searchImages(queryImage, allImages) {
+async function searchImages(queryImage, allImages, req) {
+    const weightsDocument = await Weights.findOne();
+    const defaultWeights = weightsDocument ? weightsDocument.weights : [1, 1];
+
     const formData = {
         queryImage: queryImage,
         allImagesData: [],
+        weights: defaultWeights
     };
 
+    if (req.body.feedback) {
+        formData.feedback = req.body.feedback.map(Number);
+    }
     allImages.forEach((image) => {
         const { _id, descriptor } = image;
 
@@ -49,6 +61,8 @@ async function searchImages(queryImage, allImages) {
         }
     });
 
+
+
     try {
         const flaskResponse = await axios.post(`${flaskApiUrl}/search_images`, formData, {
             headers: {
@@ -56,7 +70,7 @@ async function searchImages(queryImage, allImages) {
             },
         });
 
-        const similarImages = flaskResponse.data.similar_images;
+        const similarImages = flaskResponse.data;
 
         return similarImages;
     } catch (error) {
