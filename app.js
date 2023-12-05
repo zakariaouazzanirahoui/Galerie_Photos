@@ -16,6 +16,13 @@ app.use(cors());
 app.use(express.json());
 
 app.use((req, res, next) => {
+
+    const excludedRoutePattern = /^\/category\/get-category-by-id\/\w+\/user\/\w+\/images$/;
+    if (excludedRoutePattern.test(req.path)) {
+        next();
+        return;
+    }
+
     const originalSend = res.send;
 
     res.send = function (body) {
@@ -25,6 +32,7 @@ app.use((req, res, next) => {
 
     next();
 });
+
 
 app.use('/user', userRoutes);
 
