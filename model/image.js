@@ -40,7 +40,7 @@ const imageSchema = new mongoose.Schema({
             type: [Number],
         },
         image_gabor_filters: {
-            type: [Number],
+            type: String,
         },
     },
 });

@@ -15,6 +15,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use((req, res, next) => {
+    const originalSend = res.send;
+
+    res.send = function (body) {
+        console.log(`Response for ${req.method} ${req.url}:`, body);
+        originalSend.apply(res, arguments);
+    };
+
+    next();
+});
+
 app.use('/user', userRoutes);
 
 app.use(auth)

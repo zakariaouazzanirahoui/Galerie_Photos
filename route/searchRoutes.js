@@ -34,7 +34,7 @@ router.get('/search-images', upload.single('image'), async (req, res) => {
 
 async function searchImages(queryImage, allImages, req) {
     const weightsDocument = await Weights.findOne();
-    const defaultWeights = weightsDocument ? weightsDocument.weights : [1, 1];
+    const defaultWeights = weightsDocument ? weightsDocument.weights : [1, 1, 1];
 
     const formData = {
         queryImage: queryImage,
@@ -49,7 +49,7 @@ async function searchImages(queryImage, allImages, req) {
         const { _id, descriptor } = image;
 
         // Check if image has descriptors
-        if (descriptor && descriptor.image_moments && descriptor.image_tamura && Array.isArray(descriptor.image_tamura)) {
+        if (descriptor && descriptor.image_moments && descriptor.image_gabor_filters && typeof descriptor.image_gabor_filters === 'string' && descriptor.image_tamura && Array.isArray(descriptor.image_tamura)) {
             formData.allImagesData.push({
                 imageId: _id,
                 descriptor: {

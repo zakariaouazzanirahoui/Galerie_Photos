@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const weightsSchema = new mongoose.Schema({
     weights: {
         type: [Number],
-        default: [1, 1],
+        default: [1, 1, 1],
     },
 });
 
